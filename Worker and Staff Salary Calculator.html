@@ -1,0 +1,314 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Worker's Salary Calculator</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
+  <style>
+    .container {
+      max-width: 1200px;
+      margin-top: 2rem;
+    }
+  </style>
+</head>
+<body>
+	<div class="container">
+	  <div class="row">
+		<div class="col-6">
+		  <div class="w-100 card border p-4 my-4">
+			<div class="card-header bg-success bg-gradient p-2 text-center">
+			  <h2 class="text-white py-2">Worker Salary Calculator</h2>
+			</div>
+			<div class="card-body border p-4">
+			  <div class="row">
+				<div class="col-6">
+				  <form id="workerSalaryForm">
+					<div class="mb-3">
+					  <label for="grossSalary" class="form-label">Gross Salary (BDT):</label>
+					  <input type="number" class="form-control" id="grossSalary" required min="12500">
+					</div>
+					<div class="mb-3">
+					  <label for="overtimeHours" class="form-label">Overtime Hours (Optional):</label>
+					  <input type="number" class="form-control" id="overtimeHours" min="0" oninput="if (this.value < 0) this.value = 0;">
+					</div>
+					<div class="mb-3">
+					  <label for="absentDays" class="form-label">Absent Days (Optional):</label>
+					  <input type="number" class="form-control" id="absentDays" min="0" oninput="if (this.value < 0) this.value = 0;">
+					</div>
+					<button type="button" class="btn btn-primary" onclick="calculateWorkerSalary()">Calculate</button>
+				  </form>
+				</div>
+				<div class="col-6">
+				  <div class="w-100 card border p-4 mt-3">
+					<div id="resultContainer" class="mt-3"></div>
+				  </div>
+				</div>
+			  </div>
+			</div>
+		  </div>
+		</div>
+
+		<div class="col-6">
+		  <div class="w-100 card border p-4 my-4">
+			<div class="card-header bg-success bg-gradient p-2 text-center">
+			  <h2 class="text-white py-2">Staff Salary Calculator</h2>
+			</div>
+			<div class="card-body border p-4">
+			  <div class="row">
+				<div class="col-6">
+				  <form id="staffSalaryForm">
+					<div class="mb-3">
+					  <label for="staff_grossSalary" class="form-label">Gross Salary (BDT):</label>
+					  <input type="number" class="form-control" id="staff_grossSalary" required min="12500">
+					</div>
+					<div class="mb-3">
+					  <label for="staff_overtimeHours" class="form-label">Overtime Hours (Optional):</label>
+					  <input type="number" class="form-control" id="staff_overtimeHours" min="0" oninput="if (this.value < 0) this.value = 0;">
+					</div>
+					<!--
+					<div class="mb-3">
+						<label for="monthInput" class="form-label">Enter Month Name:</label>
+						<input type="text" class="form-control" id="monthInput" placeholder="e.g., January">
+					</div>
+					-->
+					
+					<select class="form-select" id="monthSelect">
+						<option value="1">January</option>
+						<option value="2">February</option>
+						<option value="3">March</option>
+						<option value="4">April</option>
+						<option value="5">May</option>
+						<option value="6">June</option>
+						<option value="7">July</option>
+						<option value="8">August</option>
+						<option value="9">September</option>
+						<option value="10">October</option>
+						<option value="11">November</option>
+						<option value="12">December</option>
+					</select>
+					
+					  <label class="form-label mt-2" for="year">Select Year:</label>
+					  <select class="form-select" id="year" name="year"></select>
+					      
+					<div class="mb-3">
+					  <label for="staff_absentDays" class="form-label">Absent Days (Optional):</label>
+					  <input type="number" class="form-control" id="staff_absentDays" min="0" oninput="if (this.value < 0) this.value = 0;">
+					</div>
+					<button type="button" class="btn btn-primary" onclick="calculateStaffSalary()">Calculate</button>
+				  </form>
+				</div>
+				<div class="col-6">
+				  <div class="w-100 card border p-4 mt-3">
+					<div id="staff_resultContainer" class="mt-3"></div>
+				  </div>
+				</div>
+			  </div>
+			</div>
+		  </div>
+		</div>
+		
+	  </div>
+	</div>
+	
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-kenU1KFdBIe4zVF0s0G1M5b4hcpxyD9F7jRTxBr0MQylzOzLUzO6m6xVHftrMO4" crossorigin="anonymous"></script>
+  <script>
+  
+
+    function calculateWorkerSalary() {
+	  const grossSalary = parseFloat(document.getElementById('grossSalary').value) || 0; // Set to 0 if empty
+
+	  const overtimeHours = Math.max(0, parseFloat(document.getElementById('overtimeHours').value)); // Enforce minimum of 0
+	  const absentDays = Math.max(0, parseFloat(document.getElementById('absentDays').value)) || 0; // Set to 0 if empty
+
+	  // Calculate basic salary based on gross salary
+	  const basicSalary = grossSalary > 0 ? (grossSalary - 2450) / 1.5 : 0;
+
+	  const overtimeRate = basicSalary / 104;
+	  const overtimePayable = overtimeRate * overtimeHours;
+
+	  const absentDeduction = (basicSalary / 30) * absentDays;
+
+	  // Calculate net salary based on gross salary, overtime, and absences
+	  let netSalary = grossSalary;
+	  if (absentDays > 0) {
+		netSalary -= absentDeduction;
+	  }
+	  if (overtimeHours > 0) {
+		netSalary += overtimePayable; // Add overtime pay to net salary
+	  } else {
+		// If not overtime hours, set net salary to gross salary to handle empty input case
+		netSalary = grossSalary;
+	  }
+
+      const resultContainer = document.getElementById('resultContainer');
+      resultContainer.innerHTML = ""; // Clear previous results
+
+      // Create result elements and append to container
+      const basicSalaryText = document.createElement('p');
+      basicSalaryText.textContent = `Basic Salary: BDT ${basicSalary.toFixed(2)}`;
+      resultContainer.appendChild(basicSalaryText);
+
+      const absentDeductionText = document.createElement('p');
+      absentDeductionText.textContent = `Absent Deduction: BDT ${absentDeduction.toFixed(2)}`;
+      resultContainer.appendChild(absentDeductionText);
+
+      if (overtimeHours > 0) {
+        const overtimeRateText = document.createElement('p');
+        overtimeRateText.textContent = `Overtime Rate: BDT ${overtimeRate.toFixed(2)}/hour`;
+        resultContainer.appendChild(overtimeRateText);
+
+        const overtimePayableText = document.createElement('p');
+        overtimePayableText.textContent = `Overtime Payable: BDT ${overtimePayable.toFixed(2)}`;
+        resultContainer.appendChild(overtimePayableText);
+      }
+
+      const netSalaryText = document.createElement('p');
+      netSalaryText.textContent = `Net Salary: BDT ${netSalary.toFixed(2)}`;
+      resultContainer.appendChild(netSalaryText);
+    };
+	
+	
+function calculateStaffSalary() {
+  // 1. Extract input values with error handling:
+  const staffGrossSalary = parseFloat(document.getElementById('staff_grossSalary').value) || 0;
+  if (staffGrossSalary < 0) {
+    alert("Invalid gross salary. Please enter a positive value.");
+    return; // Exit the function if gross salary is invalid
+  }
+
+  const staffOvertimeHours = Math.max(0, parseFloat(document.getElementById('staff_overtimeHours').value));
+  const staffAbsentDays = Math.max(0, parseFloat(document.getElementById('staff_absentDays').value));
+
+  // 2. Calculate basic salary (60% of gross salary):
+  const staffBasicSalary = staffGrossSalary * 0.6;
+
+  // 3. Determine number of working days in the month:
+  const month = document.getElementById('monthSelect').value; // Use selected month from dropdown
+  //const workingDays = getWorkingDaysInMonth(month);
+  const staff_workingDays = calculateWorkingDays();
+
+  // 4. Calculate overtime rate and pay:
+  const staffOvertimeRate = staffGrossSalary /(staff_workingDays * 8);
+  const staffOvertimePayable = staffOvertimeRate * staffOvertimeHours;
+
+  // 5. Calculate absent day deduction:
+  const staffAbsentDeduction = (staffBasicSalary / staff_workingDays) * staffAbsentDays;
+
+  // 6. Calculate net salary:
+  let staffNetSalary = staffGrossSalary;
+  if (staffAbsentDays > 0) {
+    staffNetSalary -= staffAbsentDeduction;
+  }
+  if (staffOvertimeHours > 0) {
+    staffNetSalary += staffOvertimePayable;
+  }
+
+  // 7. Clear previous results and display new ones:
+  const staffResultContainer = document.getElementById('staff_resultContainer');
+  staffResultContainer.innerHTML = ""; // Clear previous results
+
+  const staffBasicSalaryText = document.createElement('p');
+  staffBasicSalaryText.textContent = `Basic Salary: BDT ${staffBasicSalary.toFixed(2)}`;
+  staffResultContainer.appendChild(staffBasicSalaryText);
+
+  const staffAbsentDeductionText = document.createElement('p');
+  if (staffAbsentDays > 0) { // Only display deduction if applicable
+    staffAbsentDeductionText.textContent = `Absent Deduction: BDT ${staffAbsentDeduction.toFixed(2)}`;
+    staffResultContainer.appendChild(staffAbsentDeductionText);
+  }
+
+  if (staffOvertimeHours > 0) { // Only display overtime details if applicable
+    const staffOvertimeRateText = document.createElement('p');
+    staffOvertimeRateText.textContent = `Overtime Rate: BDT ${staffOvertimeRate.toFixed(2)}/hour`;
+    staffResultContainer.appendChild(staffOvertimeRateText);
+
+    const overtimePayableText = document.createElement('p');
+    overtimePayableText.textContent = `Overtime Payable: BDT ${staffOvertimePayable.toFixed(2)}`;
+    staffResultContainer.appendChild(overtimePayableText);
+  }
+
+  const staffNetSalaryText = document.createElement('p');
+  staffNetSalaryText.textContent = `Net Salary: BDT ${staffNetSalary.toFixed(2)}`;
+  staffResultContainer.appendChild(staffNetSalaryText);
+}
+
+      function populateYears() {
+      const yearSelect = document.getElementById("year");
+      const currentYear = new Date().getFullYear();
+      for (let year = currentYear - 10; year <= currentYear + 10; year++) {
+        const option = document.createElement("option");
+        option.value = year;
+        option.text = year;
+        yearSelect.appendChild(option);
+      }
+    }
+
+function getWorkingDaysInMonth(month) {
+  const monthDays = {
+    1: 31, // January
+    2: 28, // February (non-leap year)
+    3: 31, // March
+    4: 30, // April
+    5: 31, // May
+    6: 30, // June
+    7: 31, // July
+    8: 31, // August
+    9: 30, // September
+    10: 31, // October
+    11: 30, // November
+    12: 31, // December
+  };
+
+  // Handle leap years for February
+  if (month === 2) {
+    const year = new Date().getFullYear();
+    if (year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0)) {
+      monthDays[2] = 29; // Leap year
+    }
+  }
+
+  return monthDays[month];
+}
+
+    function calculateWorkingDays() {
+      //const selectedMonth = parseInt(document.getElementById("monthSelect").value);
+      //const selectedYear = parseInt(document.getElementById("year").value);
+
+      //const workingDays = getWorkingDaysInMonth(selectedMonth);
+      //const resultElement = document.getElementById("result");
+      //resultElement.textContent = `Number of working days in ${selectedMonth}/${selectedYear}: ${workingDays}`;
+	  //return workingDays;
+	  
+	    const selectedMonth = parseInt(document.getElementById("monthSelect").value);
+  const selectedYear = parseInt(document.getElementById("year").value);
+
+  // Determine if it's a leap year
+  const isLeapYear = selectedYear % 4 === 0 && (selectedYear % 100 !== 0 || selectedYear % 400 === 0);
+
+  // Set the number of working days in February based on leap year
+  const monthDays = {
+    1: 31,
+    2: isLeapYear ? 29 : 28,
+    3: 31,
+    4: 30,
+    5: 31,
+    6: 30,
+    7: 31,
+    8: 31,
+    9: 30,
+    10: 31,
+    11: 30,
+    12: 31,
+  };
+
+  return monthDays[selectedMonth];
+    }
+	
+	// Call populateYears function to populate the year dropdown on page load
+    populateYears();
+
+  </script>
+</body>
+</html>	
